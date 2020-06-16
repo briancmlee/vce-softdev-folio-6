@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import _ from 'lodash'
 import './App.css';
 
 import Container from 'react-bootstrap/Container';
@@ -8,16 +9,16 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 
-let initialValue = {
+let initValues = {
   monday: "",
   tuesday: "",
   wednesday: "",
   thursday: "",
   friday: ""
-};
+}
 
-if (localStorage.getItem("data")) {
-  initialValue = JSON.parse(localStorage.getItem("data"));
+if (JSON.parse(localStorage.getItem("data"))) {
+  initValues = JSON.parse(localStorage.getItem("data"));
 }
 
 function DayCol(props) {
@@ -63,12 +64,13 @@ class App extends React.Component {
     super(props);
 
     this.state = {
-      inputValues: initialValue,
+      inputValues: initValues,
       lastUpdated: JSON.parse(localStorage.getItem("lastUpdated"))
     };
 
     this.handleChange = this.handleChange.bind(this);
     this.handleClick = this.handleClick.bind(this);
+    this.handleClear = this.handleClear.bind(this);
   }
 
   handleChange(event) {
@@ -84,6 +86,23 @@ class App extends React.Component {
   handleClick() {
     localStorage.setItem("data", JSON.stringify(this.state.inputValues));
     localStorage.setItem("lastUpdated", JSON.stringify(new Date()))
+    this.setState({
+      lastUpdated: new Date()
+    });
+  }
+
+  handleClear() {
+    localStorage.clear();
+    this.setState({
+      inputValues: {
+        monday: "",
+        tuesday: "",
+        wednesday: "",
+        thursday: "",
+        friday: ""
+      },
+      lastUpdated: null
+    })
   }
 
   render() {
@@ -103,20 +122,24 @@ class App extends React.Component {
             <DayCol name="friday" value={this.state.inputValues.friday} onChange={this.handleChange} />
           </Row>
           <Row className="my-3">
-            <Col></Col>
-            <Col></Col>
-            <Col></Col>
             <Col>
-              {/* <Button variant="outline-primary" style={{"width": "100%"}} >About</Button> */}
               <AboutModal />
             </Col>
+            <Col></Col>
+            <Col></Col>
             <Col>
-              { this.state.inputValues   === initialValue ?
-              <Button variant="outline-primary" style={{"width": "100%"}} onClick={this.handleClick} disabled >Save</Button>
-              : 
+              <Button variant="outline-primary" style={{"width": "100%"}} onClick={this.handleClear}>Reset and Clear Saved</Button>
+            </Col>
+            <Col>
+              { _.isEqual(this.state.inputValues, JSON.parse(localStorage.getItem("data"))) ?
+              <Button variant="outline-primary" style={{"width": "100%"}} onClick={this.handleClick} disabled>Save</Button> :
               <Button variant="primary" style={{"width": "100%"}} onClick={this.handleClick}>Save</Button>
               }
-              <p className="text-left" style={{"font-size": "0.6rem"}}>Last saved: {JSON.parse(localStorage.getItem("lastUpdated"))}</p>
+              
+              <p className="text-left" style={{"font-size": "0.6rem"}}>{ localStorage.getItem("lastUpdated") ? 
+                `Last saved: ${JSON.parse(localStorage.getItem("lastUpdated"))}` :
+                "Nothing saved yet" 
+              }</p>
             </Col>
           </Row>
         </Container>
